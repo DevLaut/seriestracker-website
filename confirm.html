@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Confirmation du compte - SeriesTracker</title>
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      font-family: Arial, sans-serif;
+      background: #f3f6fc;
+      color: #172554;
+    }
+
+    main {
+      width: 100%;
+      max-width: 440px;
+      padding: 36px 24px;
+      text-align: center;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 8px 30px rgba(30, 64, 175, 0.08);
+    }
+
+    .icon {
+      font-size: 52px;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      font-size: 25px;
+      margin: 0 0 16px;
+    }
+
+    p {
+      color: #475569;
+      line-height: 1.6;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="icon" id="icon">⏳</div>
+    <h1 id="title">Confirmation en cours…</h1>
+    <p id="message">Veuillez patienter quelques instants.</p>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://wftydmtdnrjgehangshe.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY =
+      "sb_publishable_vKCNX9gZp9ptQ_SLoT8j2Q_lmp4L0u1";
+
+    const { createClient } = supabase;
+    const client = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+
+    async function confirmAccount() {
+      const params = new URLSearchParams(window.location.search);
+      const tokenHash = params.get("token_hash");
+      const type = params.get("type") || "signup";
+
+      if (!tokenHash) {
+        showMessage(
+          "Lien invalide",
+          "Ce lien de confirmation est incomplet. Demandez un nouvel e-mail de confirmation.",
+          "⚠️"
+        );
+        return;
+      }
+
+      const { error } = await client.auth.verifyOtp({
+        token_hash: tokenHash,
+        type
+      });
+
+      if (error) {
+        showMessage(
+          "Confirmation impossible",
+          "Ce lien est peut-être expiré ou déjà utilisé. Essayez de vous connecter ou demandez un nouveau lien.",
+          "⚠️"
+        );
+        return;
+      }
+
+      showMessage(
+        "Adresse e-mail confirmée !",
+        "Votre compte SeriesTracker est maintenant activé. Vous pouvez retourner dans l’application pour vous connecter.",
+        "✅"
+      );
+    }
+
+    function showMessage(title, message, icon) {
+      document.getElementById("icon").textContent = icon;
+      document.getElementById("title").textContent = title;
+      document.getElementById("message").textContent = message;
+    }
+
+    confirmAccount();
+  </script>
+</body>
+</html>
